@@ -30,6 +30,28 @@ class MediaViewHelper extends \TYPO3\CMS\Fluid\ViewHelpers\MediaViewHelper
     }
 
     /**
+     * Render a given media file
+     *
+     * @return string Rendered tag
+     * @throws \UnexpectedValueException
+     */
+    public function render()
+    {
+        if($this->arguments['lazyload']){
+            $this->arguments['class'] .= ' lazyload';
+            $this->tag->addAttribute('class', trim($this->tag->getAttribute('class') . ' lazyload'));
+        }
+
+        $tag = parent::render();
+        
+        if($this->arguments['lazyload'] && FALSE === strpos($tag, 'data-src')){
+            $tag = str_replace(' src=', ' data-src=', $tag);
+        }
+
+        return $tag;
+    }
+
+    /**
      * Render img tag
      *
      * @param  FileInterface $image

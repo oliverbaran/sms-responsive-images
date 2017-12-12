@@ -73,6 +73,8 @@ class ResponsiveImagesUtility implements SingletonInterface
 
         // Use width of fallback image as reference for relative sizes (1x, 2x...)
         $referenceWidth = $fallbackImage->getProperty('width');
+        // Use height of fallback image as reference for relative sizes (1x, 2x...)
+        $referenceHeight = $fallbackImage->getProperty('height');
 
         // if lazyload enabled add data- prefix
         $attributePrefix = $lazyload ? 'data-' : '';
@@ -84,7 +86,7 @@ class ResponsiveImagesUtility implements SingletonInterface
         }
 
         // Generate different image sizes for srcset attribute
-        $srcsetImages = $this->generateSrcsetImages($originalImage, $referenceWidth, $srcset, $cropArea, $absoluteUri);
+        $srcsetImages = $this->generateSrcsetImages($originalImage, $referenceWidth, $srcset, $cropArea, $absoluteUri, $referenceHeight);
         $srcsetMode = substr(key($srcsetImages), -1); // x or w
 
         // Add fallback image to source options
@@ -101,7 +103,7 @@ class ResponsiveImagesUtility implements SingletonInterface
 
         // Provide image dimensions to be consistent with TYPO3 core behavior
         $tag->addAttribute('width', $referenceWidth);
-        $tag->addAttribute('height', $fallbackImage->getProperty('height'));
+        $tag->addAttribute('height', $referenceHeight);
 
         // Add metadata to image tag
         $this->addMetadataToImageTag($tag, $originalImage, $fallbackImage, $focusArea);
@@ -321,7 +323,8 @@ class ResponsiveImagesUtility implements SingletonInterface
         int $defaultWidth,
         $srcset,
         Area $cropArea = null,
-        bool $absoluteUri = false
+        bool $absoluteUri = false,
+        int $defaultHeight
     ): array {
         $cropArea = $cropArea ?: Area::createEmpty();
 
@@ -354,6 +357,9 @@ class ResponsiveImagesUtility implements SingletonInterface
                 'width' => $candidateWidth,
                 'crop' => $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image),
             ];
+            if($defaultHeight){
+                $processingInstructions['height'] = ($candidateWidth/$defaultWidth) * $defaultHeight;
+            }
             $processedImage = $this->imageService->applyProcessingInstructions($image, $processingInstructions);
 
             // If processed file isn't as wide as it should be ([GFX][processor_allowUpscaling] set to false)
