@@ -95,6 +95,10 @@ class ResponsiveImagesUtility implements SingletonInterface
 
         // Set srcset attribute for image tag
         $tag->addAttribute($attributePrefix.'srcset', $this->generateSrcsetAttribute($srcsetImages));
+        if($lazyload){
+            // Set data-src attribute as fallback for image tag
+            $tag->addAttribute($attributePrefix.'src', $fallbackImageUri);
+        }
 
         // Add sizes attribute to image tag
         if ($srcsetMode == 'w' && $sizesQuery) {
